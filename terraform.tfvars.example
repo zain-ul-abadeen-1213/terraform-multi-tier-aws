@@ -1,0 +1,7 @@
+# Copy this file to terraform.tfvars and fill in your own values.
+# NEVER commit a real terraform.tfvars - it is git-ignored on purpose.
+
+region       = "ap-south-1"
+project_name = "multitier-app"
+db_username  = "appadmin"
+db_password  = "change-me-use-a-strong-password"
