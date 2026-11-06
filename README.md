@@ -20,6 +20,17 @@
 
 This configuration was not just written — it was **run end-to-end on a real AWS account**. The first apply hit a genuine failure; it was diagnosed, fixed, and resumed. All times and outputs below are from the actual run.
 
+**The run, as a horizontal pipeline:**
+
+```mermaid
+flowchart LR
+    V["validate<br/>✔ configuration valid"] --> P["plan<br/>28 to add"]
+    P --> A1["apply #1<br/>27 created · RDS failed"]
+    A1 --> A2["apply #2 (resume)<br/>✔ RDS created"]
+    A2 --> L["live check<br/>ALB serving the app page"]
+    L --> D["destroy<br/>28 destroyed"]
+```
+
 | Step | Result |
 |---|---|
 | `terraform validate` | ✅ Success — configuration is valid |
@@ -52,6 +63,19 @@ This configuration was not just written — it was **run end-to-end on a real AW
 ---
 
 ## Architecture
+
+**Horizontal view — how a request travels through the system:**
+
+```mermaid
+flowchart LR
+    U["Internet user"] --> IGW["Internet Gateway"]
+    IGW --> ALB["Application Load Balancer<br/>public subnets · HTTP :80"]
+    ALB --> ASG["Auto Scaling Group — EC2<br/>app tier · private subnets"]
+    ASG --> RDS[("RDS MySQL 8.0<br/>private DB subnets")]
+    ASG -. "updates via" .-> NAT["NAT Gateway"]
+```
+
+**Tree view — the same system, laid out by tier:**
 
 ```
                         Internet
