@@ -2,7 +2,36 @@
 
 Infrastructure as Code for a classic **three-tier architecture** on AWS: a public load-balancer tier, a private application tier with Auto Scaling, and a private database tier — all inside one VPC spanning two Availability Zones.
 
-The configuration is complete and passes `terraform validate`. It has **not been applied yet** — applying creates billable resources, so the plan is reviewed first (see *Cost notes*).
+The configuration is complete, passes `terraform validate`, and was **applied to real AWS (ap-south-1) on 6 November 2026**: all **28 resources** were created, the load balancer was verified serving live traffic, and everything was then **destroyed in the same session** to control cost. The full run — including one real failure and its fix — is documented under *Verified run* below.
+
+---
+
+## Verified run — 6 November 2026
+
+| Step | Result |
+|---|---|
+| `terraform validate` | ✅ Success — configuration is valid |
+| `terraform plan` | ✅ **28 to add, 0 to change, 0 to destroy** |
+| `terraform apply` (first run) | ⚠️ 27 resources created (VPC, subnets, NAT, ALB, listener, ASG), then RDS failed: *"The parameter MasterUserPassword is not a valid password because it is shorter than 8 characters"* |
+| `terraform apply` (resume, valid password) | ✅ **Apply complete** — RDS created (4m56s); only the 1 remaining resource was added |
+| Live verification | ✅ ALB served the application page from an app-tier instance (`Served by ip-10-20-12-110.ap-south-1.compute.internal`) |
+| `terraform destroy` | ✅ **28 destroyed** — same session, to stop further charges |
+
+**1. The plan — 28 resources, nothing to destroy:**
+
+![terraform plan: 28 to add, 0 to change, 0 to destroy](docs/01-plan.png)
+
+**2. The real failure — RDS rejected a too-short master password (the other 27 resources were already created):**
+
+![RDS password error during first apply](docs/02-apply-rds-error.png)
+
+**3. Apply complete — outputs, including the RDS endpoint and VPC ID:**
+
+![terraform apply complete with outputs](docs/03-apply-complete.png)
+
+**4. Live verification — the application tier answering through the load balancer:**
+
+![Live page served by an app-tier instance through the ALB](docs/04-live-verification.png)
 
 ---
 
@@ -80,7 +109,7 @@ Real `terraform.tfvars` and state files are git-ignored and must never be commit
 
 ## Skills demonstrated
 
-Terraform (providers, variables, locals, count, data sources, outputs, sensitive values) · AWS VPC design (subnets, route tables, IGW, NAT) · load balancing and Auto Scaling · RDS · security-group design · cost-aware infrastructure decisions
+Terraform (providers, variables, locals, count, data sources, outputs, sensitive values) · the complete infrastructure lifecycle — plan, apply, live verification, destroy · AWS VPC design (subnets, route tables, IGW, NAT) · load balancing and Auto Scaling · RDS · security-group design · troubleshooting a failed apply and resuming it · cost-aware infrastructure decisions
 
 ---
 
