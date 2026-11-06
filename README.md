@@ -1,12 +1,24 @@
 # Multi-Tier AWS Infrastructure with Terraform
 
-Infrastructure as Code for a classic **three-tier architecture** on AWS: a public load-balancer tier, a private application tier with Auto Scaling, and a private database tier — all inside one VPC spanning two Availability Zones.
+> Infrastructure as Code for a classic **three-tier architecture** on AWS — a public load-balancer tier, a private application tier with Auto Scaling, and a private database tier, all inside one VPC spanning two Availability Zones.
 
-The configuration is complete, passes `terraform validate`, and was **applied to real AWS (ap-south-1) on 6 November 2026**: all **28 resources** were created, the load balancer was verified serving live traffic, and everything was then **destroyed in the same session** to control cost. The full run — including one real failure and its fix — is documented under *Verified run* below.
+![Terraform](https://img.shields.io/badge/Terraform-1.10-844FBA?logo=terraform&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-ap--south--1%20(Mumbai)-FF9900?logo=amazonaws&logoColor=white)
+![Status](https://img.shields.io/badge/lifecycle-applied%20%C2%B7%20verified%20%C2%B7%20destroyed-brightgreen)
+
+| At a glance | |
+|---|---|
+| **Architecture** | 3-tier: ALB → Auto Scaling Group (EC2) → RDS MySQL |
+| **Network** | VPC 10.20.0.0/16 · 6 subnets (2 per tier) · 2 Availability Zones · 1 NAT Gateway |
+| **Resources** | 28, all declared in code |
+| **Security** | Chained security groups — every tier accepts traffic only from the tier in front of it |
+| **Lifecycle proof** | Planned, applied, verified live, and destroyed on **6 November 2026** (see *Verified run*) |
 
 ---
 
 ## Verified run — 6 November 2026
+
+This configuration was not just written — it was **run end-to-end on a real AWS account**. The first apply hit a genuine failure; it was diagnosed, fixed, and resumed. All times and outputs below are from the actual run.
 
 | Step | Result |
 |---|---|
@@ -81,6 +93,7 @@ The configuration is complete, passes `terraform validate`, and was **applied to
 | `compute.tf` | ALB + target group + listener, launch template, Auto Scaling Group, RDS MySQL |
 | `outputs.tf` | VPC ID, ALB DNS name, RDS endpoint, ASG name |
 | `terraform.tfvars.example` | Example variable values — copy to `terraform.tfvars` and fill in your own |
+| `docs/` | Screenshots from the verified run (plan, failure, apply, live check, destroy) |
 
 ## Usage
 
@@ -109,7 +122,7 @@ Real `terraform.tfvars` and state files are git-ignored and must never be commit
 
 ## Cost notes
 
-`terraform apply` creates resources that cost money while they exist — mainly the **NAT Gateway**, the **Application Load Balancer**, the **RDS instance**, and the **EC2 instances**. Review `terraform plan` carefully before applying, and run `terraform destroy` as soon as practice is finished.
+`terraform apply` creates resources that cost money while they exist — mainly the **NAT Gateway**, the **Application Load Balancer**, the **RDS instance**, and the **EC2 instances**. Review `terraform plan` carefully before applying, and run `terraform destroy` as soon as practice is finished — exactly what was done in the verified run above.
 
 ## Skills demonstrated
 
