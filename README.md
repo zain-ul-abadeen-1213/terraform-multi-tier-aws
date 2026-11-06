@@ -33,6 +33,10 @@ The configuration is complete, passes `terraform validate`, and was **applied to
 
 ![Live page served by an app-tier instance through the ALB](docs/04-live-verification.png)
 
+**5. Destroy complete — all 28 resources removed in the same session (note the VPC ID matches the one created in step 3):**
+
+![terraform destroy complete: 28 destroyed](docs/05-destroy-complete.png)
+
 ---
 
 ## Architecture
